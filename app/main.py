@@ -35,6 +35,9 @@ def main():
         client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
     elif parsed_request["path"] == "/": 
         client.sendall(b"HTTP/1.1 200 OK\r\n\r\n")
+    elif parsed_request['path'] == "/user-agent":
+        user_agent = parsed_request["User-Agent"].strip()
+        client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}".encode())
     else:
         client.sendall(b"HTTP/1.1 404 Not Found\r\n\r\n")
 
