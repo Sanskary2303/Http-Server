@@ -1,5 +1,6 @@
 # Uncomment this to pass the first stage
 import socket
+import threading
 
 def parse_request(request:str):
     header_dict = {}
@@ -16,16 +17,7 @@ def parse_request(request:str):
             header_dict[key] = value
     return header_dict
 
-
-def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!")
-
-    # Uncomment this to pass the first stage
-    
-    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
-    client, address = server_socket.accept()
-
+def handle_client(client):
     request = client.recv(1024).decode()
     parsed_request = parse_request(request)
 
@@ -40,6 +32,21 @@ def main():
         client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}".encode())
     else:
         client.sendall(b"HTTP/1.1 404 Not Found\r\n\r\n")
+
+
+def main():
+    # You can use print statements as follows for debugging, they'll be visible when running tests.
+    print("Logs from your program will appear here!")
+
+    # Uncomment this to pass the first stage
+    
+    server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
+
+    while True:
+        client, address = server_socket.accept()
+        thread = threading.Thread(target=handle_client,args=(client,))
+        thread.start()
+
 
 
 if __name__ == "__main__":
