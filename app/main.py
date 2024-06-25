@@ -21,6 +21,7 @@ def parse_request(request:str):
 
 def handle_client(client):
     print(len(sys.argv))
+    print(sys.argv)
     request = client.recv(1024).decode()
     parsed_request = parse_request(request)
 
