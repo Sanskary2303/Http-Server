@@ -30,6 +30,7 @@ def handle_client(client):
         print(directory)
 
     modified_path = parsed_request["path"].split('/',2)
+    print(modified_path)
 
     if modified_path[1] == "echo":
         client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
