@@ -20,6 +20,7 @@ def parse_request(request:str):
     return header_dict
 
 def handle_client(client):
+    print(len(sys.argv))
     request = client.recv(1024).decode()
     parsed_request = parse_request(request)
 
@@ -54,6 +55,7 @@ def handle_client(client):
 def main():
 
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
+    print("started server")
 
     while True:
         client, address = server_socket.accept()
