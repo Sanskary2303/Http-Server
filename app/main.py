@@ -34,7 +34,7 @@ def handle_client(client):
 
     if modified_path[1] == "echo":
         client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
-    elif modified_path[1] == "file":
+    elif modified_path[1] == "files":
         filename = modified_path[2]
         filepath = os.path.join(directory,filename)
         print(filepath)
