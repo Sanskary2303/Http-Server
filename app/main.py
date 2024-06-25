@@ -20,24 +20,20 @@ def parse_request(request:str):
     return header_dict
 
 def handle_client(client):
-    print(len(sys.argv))
-    print(sys.argv)
+
     request = client.recv(1024).decode()
     parsed_request = parse_request(request)
 
-    if sys.argv[1] == "--directory":
+    if len(sys.argv) >1  and sys.argv[1] == "--directory":
         directory = sys.argv[2]
-        print(directory)
 
     modified_path = parsed_request["path"].split('/',2)
-    print(modified_path)
 
     if modified_path[1] == "echo":
         client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
     elif modified_path[1] == "files":
         filename = modified_path[2]
         filepath = os.path.join(directory,filename)
-        print(filepath)
         if(os.path.exists(filepath)):
             with open(filepath, "r") as f:
                 content = f.read()
@@ -57,7 +53,6 @@ def handle_client(client):
 def main():
 
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
-    print("started server")
 
     while True:
         client, address = server_socket.accept()
