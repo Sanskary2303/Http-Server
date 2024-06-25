@@ -5,18 +5,21 @@ import os
 
 
 def parse_request(request:str):
+
     header_dict = {}
     headers = request.split("\r\n")
     request_line = headers[0].split()
     header_dict["method"] = request_line[0]
     header_dict["path"] = request_line[1]
     header_dict["protocol"] = request_line[2]
+
     for header in headers[1:]:
         if header == '':
             break
         else:
             key , value = header.split(':',1)
-            header_dict[key] = value
+            header_dict[key] = value.strip()
+    header_dict["data"] = headers[-1].strip()
     return header_dict
 
 def handle_client(client):
@@ -31,21 +34,31 @@ def handle_client(client):
 
     if modified_path[1] == "echo":
         client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
+
     elif modified_path[1] == "files":
         filename = modified_path[2]
         filepath = os.path.join(directory,filename)
-        if(os.path.exists(filepath)):
-            with open(filepath, "r") as f:
-                content = f.read()
-            client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(content)}\r\n\r\n{content}".encode())
-        else:
-            client.sendall(b"HTTP/1.1 404 Not Found\r\n\r\n")
-        
+
+        if parsed_request["method"] == "GET":
+            if(os.path.exists(filepath)):
+                with open(filepath, "r") as f:
+                    content = f.read()
+                client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(content)}\r\n\r\n{content}".encode())
+            else:
+                client.sendall(b"HTTP/1.1 404 Not Found\r\n\r\n")
+
+        elif parsed_request["method"] == "POST":
+            with open(filepath,"w") as f:
+                f.write(parsed_request["data"])
+            client.sendall(b"HTTP/1.1 201 Created\r\n\r\n")
+
     elif parsed_request["path"] == "/": 
         client.sendall(b"HTTP/1.1 200 OK\r\n\r\n")
+
     elif parsed_request['path'] == "/user-agent":
         user_agent = parsed_request["User-Agent"].strip()
         client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(user_agent)}\r\n\r\n{user_agent}".encode())
+
     else:
         client.sendall(b"HTTP/1.1 404 Not Found\r\n\r\n")
 
