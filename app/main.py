@@ -25,6 +25,7 @@ def handle_client(client):
 
     if sys.argv[1] == "--directory":
         directory = sys.argv[2]
+        print(directory)
 
     modified_path = parsed_request["path"].split('/',2)
 
@@ -33,7 +34,7 @@ def handle_client(client):
     elif modified_path[1] == "file":
         filename = modified_path[2]
         filepath = os.path.join(directory,filename)
-
+        print(filepath)
         if(os.path.exists(filepath)):
             with open(filepath, "r") as f:
                 content = f.read()
