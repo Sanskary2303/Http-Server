@@ -1,6 +1,8 @@
-# Uncomment this to pass the first stage
 import socket
 import threading
+import sys
+import os
+
 
 def parse_request(request:str):
     header_dict = {}
@@ -21,10 +23,24 @@ def handle_client(client):
     request = client.recv(1024).decode()
     parsed_request = parse_request(request)
 
-    modified_path = parsed_request["path"].split('/')
+    if sys.argv[1] == "--directory":
+        directory = sys.argv[2]
+
+    modified_path = parsed_request["path"].split('/',2)
 
     if modified_path[1] == "echo":
         client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
+    elif modified_path[1] == "file":
+        filename = modified_path[2]
+        filepath = os.path.join(directory,filename)
+
+        if(os.path.exists(filepath)):
+            with open(filepath, "r") as f:
+                content = f.read()
+            client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {len(content)}\r\n\r\n{content}".encode())
+        else:
+            client.sendall(b"HTTP/1.1 404 Not Found\r\n\r\n")
+        
     elif parsed_request["path"] == "/": 
         client.sendall(b"HTTP/1.1 200 OK\r\n\r\n")
     elif parsed_request['path'] == "/user-agent":
@@ -35,11 +51,7 @@ def handle_client(client):
 
 
 def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!")
 
-    # Uncomment this to pass the first stage
-    
     server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
 
     while True:
