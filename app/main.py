@@ -2,7 +2,7 @@ import socket
 import threading
 import sys
 import os
-
+import gzip
 
 def parse_request(request:str):
 
@@ -33,7 +33,11 @@ def handle_client(client):
     modified_path = parsed_request["path"].split('/',2)
 
     if modified_path[1] == "echo":
-        client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
+        if "Accept-Encoding" in parsed_request.keys() and parsed_request["Accept-Encoding"] == "gzip":
+                compressed_data = gzip.compress(modified_path[2].encode())
+                client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: {len(compressed_data)}\r\n\r\n{compressed_data}".encode())
+        else:
+            client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
 
     elif modified_path[1] == "files":
         filename = modified_path[2]
