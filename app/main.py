@@ -3,7 +3,6 @@ import threading
 import sys
 import os
 import gzip
-import binascii
 
 def parse_request(request:str):
 
@@ -37,8 +36,9 @@ def handle_client(client):
         if "Accept-Encoding" in parsed_request.keys():
             accepted_encodings = list(map(str.strip , parsed_request["Accept-Encoding"].split(",")))
             if "gzip" in accepted_encodings:
-                compressed_data = binascii.hexlify(gzip.compress(modified_path[2].encode())).decode()
-                client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: {len(compressed_data)}\r\n\r\n{compressed_data}".encode())
+                compressed_data = gzip.compress(modified_path[2].encode())
+                client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: {len(compressed_data)}\r\n\r\n".encode())
+                client.sendall(compressed_data)
             else:
                 client.sendall(f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(modified_path[2])}\r\n\r\n{modified_path[2]}".encode())
         else:
