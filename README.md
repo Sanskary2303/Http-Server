@@ -1,38 +1,105 @@
-[![progress-banner](https://backend.codecrafters.io/progress/http-server/33711647-d0e1-480f-b69b-b9869f20fe60)](https://app.codecrafters.io/users/Sanskary2303?r=2qF)
+# HTTP Server Project
 
-This is a starting point for Python solutions to the
-["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+## Overview
 
-[HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) is the
-protocol that powers the web. In this challenge, you'll build a HTTP/1.1 server
-that is capable of serving multiple clients.
+This project is a simple HTTP server implemented in Python using the `socket` and `threading` modules. It includes functionality for handling echo requests, serving files, processing user-agent requests, and handling different HTTP methods (GET and POST).
 
-Along the way you'll learn about TCP servers,
-[HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html),
-and more.
+## Features
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+1. **Echo Service**: 
+   - Responds with the message sent in the request path. Supports gzip compression if specified in the `Accept-Encoding` header.
 
-# Passing the first stage
+2. **File Service**:
+   - **GET**: Serves files from a specified directory.
+   - **POST**: Allows uploading files to a specified directory.
 
-The entry point for your HTTP server implementation is in `app/main.py`. Study
-and uncomment the relevant code, and push your changes to pass the first stage:
+3. **User-Agent Service**:
+   - Responds with the `User-Agent` header sent in the request.
 
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
+4. **Root Path**:
+   - Responds with a simple `200 OK` status.
+
+## Usage
+
+### Starting the Server
+
+To start the server, run the following command in your terminal:
+
+```bash
+python server.py [--directory <path_to_directory>]
+
+```
+   - The `--directory` argument is optional. If provided, it specifies the directory from which files will be served.
+
+## Handling Requests
+1. **Echo Requests:**
+
+   - Send a request to /echo/<message>.
+   - Example: http://localhost:4221/echo/HelloWorld
+
+2. **File Requests:**
+
+   - **GET**: Request a file from the specified directory.
+      - Example: http://localhost:4221/files/filename.txt
+   - **POST**: Upload a file to the specified directory.
+      - Include the file content in the request body.
+
+3. **User-Agent Requests:**
+
+   - Send a request to /user-agent to get the User-Agent header from the request.
+   - Example: http://localhost:4221/user-agent
+
+## Example Commands
+1. **Start Server with Directory:**
+
+```bash
+python server.py --directory /path/to/directory
 ```
 
-Time to move on to the next stage!
+2. **Send Echo Request:**
 
-# Stage 2 & beyond
+```bash
+curl -H "Accept-Encoding: gzip" http://localhost:4221/echo/HelloWorld
+```
 
-Note: This section is for stages 2 and beyond.
+3. **Get a File:**
 
-1. Ensure you have `python (3.11)` installed locally
-1. Run `./your_server.sh` to run your program, which is implemented in
-   `app/main.py`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+```bash
+curl http://localhost:4221/files/filename.txt
+```
+
+4. **Post a File:**
+
+```bash
+curl -X POST -d "File content" http://localhost:4221/files/newfile.txt
+```
+
+5. **Get User-Agent:**
+
+```bash
+curl http://localhost:4221/user-agent
+```
+
+## Code Overview
+
+### `parse_request` Function
+Parses the incoming HTTP request and returns a dictionary containing the method, path, protocol, headers, and data.
+
+### `handle_client` Function
+Handles client requests based on the parsed request:
+
+   - Echoes the message for /echo.
+   - Serves or uploads files for /files.
+   - Returns the User-Agent for /user-agent.
+   - Returns 200 OK for the root path.
+   - Returns 404 Not Found for invalid paths.
+
+### `main` Function
+Creates and starts the server, accepting incoming client connections and spawning a new thread to handle each client.
+
+## Dependencies
+   - Python 3.x
+
+## Notes
+   - Ensure the specified directory exists and is accessible for file operations.
+   - The server listens on `localhost` at port `4221`.
